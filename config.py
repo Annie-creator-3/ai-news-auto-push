@@ -2,7 +2,7 @@
 SMTP_SERVER = "smtp.qq.com"
 SMTP_PORT = 465
 FROM_EMAIL = "siwuxie666@qq.com"  # 发送人
-TO_EMAILS = ["siwuxie666@qq.com", "3432881734@qq.com"]  # 收件人列表
+TO_EMAILS = ["siwuxie666@qq.com"]  # 收件人列表
 
 # RSS源配置
 RSS_SOURCES = {
