@@ -59,7 +59,7 @@ def create_html_content(news_by_category: Dict[str, List[Dict]]) -> str:
     return html
 
 def send_email(news_by_category: Dict[str, List[Dict]]) -> bool:
-    """发送邮件（支持多收件人）"""
+    """发送邮件（支持多收件人，从Secrets读取）"""
     try:
         password = os.environ.get("EMAIL_PASSWORD")
         
@@ -67,20 +67,23 @@ def send_email(news_by_category: Dict[str, List[Dict]]) -> bool:
             print("错误: 未设置 EMAIL_PASSWORD")
             return False
         
-        # 支持多收件人
-        to_emails = config.TO_EMAILS
+        # 从 Secrets 读取收件人，如果没有则使用 config 中的默认值
+        to_emails_str = os.environ.get("TO_EMAIL", ",".join(config.TO_EMAILS))
+        to_emails = [email.strip() for email in to_emails_str.split(",")]
+        
+        print(f"收件人列表: {to_emails}")
         
         msg = MIMEMultipart("alternative")
         msg["Subject"] = f"🤖 AI资讯日报 - {__import__('datetime').datetime.now().strftime('%m月%d日')}"
         msg["From"] = config.FROM_EMAIL
-        msg["To"] = ", ".join(to_emails)  # 多个收件人用逗号分隔
+        msg["To"] = ", ".join(to_emails)
         
         html_content = create_html_content(news_by_category)
         msg.attach(MIMEText(html_content, "html", "utf-8"))
         
         server = smtplib.SMTP_SSL(config.SMTP_SERVER, config.SMTP_PORT)
         server.login(config.FROM_EMAIL, password)
-        server.sendmail(config.FROM_EMAIL, to_emails, msg.as_string())  # to_emails是列表
+        server.sendmail(config.FROM_EMAIL, to_emails, msg.as_string())
         server.quit()
         
         print(f"邮件发送成功至: {', '.join(to_emails)}")
